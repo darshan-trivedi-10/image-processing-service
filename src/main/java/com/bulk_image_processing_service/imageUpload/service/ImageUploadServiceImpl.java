@@ -3,37 +3,37 @@ package com.bulk_image_processing_service.imageUpload.service;
 import com.bulk_image_processing_service.imageUpload.dto.ProductImageSheetDto;
 import com.bulk_image_processing_service.imageUpload.dto.Response;
 import com.bulk_image_processing_service.imageUpload.exception.InvalidSheetFormatException;
+import com.bulk_image_processing_service.imageUpload.repository.ImageUploadRepository;
 import com.bulk_image_processing_service.imageUpload.utils.ReadAndValidateProductImageSheet;
-import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.util.List;
 
 @Service
 public class ImageUploadServiceImpl implements ImageUploadService{
 
     private ReadAndValidateProductImageSheet readAndValidateProductImageSheet;
+    private ImageUploadRepository imageUploadRepository;
 
-    private final String SUCCESS_MESSAGE = "Your request has been submitted successfully. Request ID: ";
+    private final String RESPONSE_SUCCESS_MESSAGE = "Your request has been submitted successfully. Request ID: %s";
 
     @Autowired
-    public ImageUploadServiceImpl(ReadAndValidateProductImageSheet readAndValidateProductImageSheet){
+    public ImageUploadServiceImpl(ReadAndValidateProductImageSheet readAndValidateProductImageSheet, ImageUploadRepository imageUploadRepository){
         this.readAndValidateProductImageSheet = readAndValidateProductImageSheet;
+        this.imageUploadRepository = imageUploadRepository;
     }
 
     @Override
     public ResponseEntity<?> processImageSheet(MultipartFile productImageSheet) {
         Response response = new Response();
-
         try {
             List<ProductImageSheetDto> productDataList = readAndValidateProductImageSheet.readProductImageSheet(productImageSheet);
-
-            response.setMessage("Your request has been submitted successfully. Request ID: ");
+            int requestId = imageUploadRepository.createImageProcessRequest(productDataList);
+            response.setMessage(String.format(RESPONSE_SUCCESS_MESSAGE, requestId));
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (InvalidSheetFormatException exception){
             response.setMessage(exception.getMessage());
