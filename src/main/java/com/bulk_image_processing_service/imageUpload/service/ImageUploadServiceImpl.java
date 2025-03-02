@@ -8,11 +8,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
 
+@Service
 public class ImageUploadServiceImpl implements ImageUploadService{
 
     private ReadAndValidateProductImageSheet readAndValidateProductImageSheet;
@@ -30,7 +32,6 @@ public class ImageUploadServiceImpl implements ImageUploadService{
 
         try {
             List<ProductImageSheetDto> productDataList = readAndValidateProductImageSheet.readProductImageSheet(productImageSheet);
-
 
             response.setMessage("Your request has been submitted successfully. Request ID: ");
             return ResponseEntity.status(HttpStatus.OK).body(response);
