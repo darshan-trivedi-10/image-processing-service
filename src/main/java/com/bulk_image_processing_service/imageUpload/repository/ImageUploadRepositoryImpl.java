@@ -35,31 +35,40 @@ public class ImageUploadRepositoryImpl implements ImageUploadRepository{
     @Override
     @Transactional
     public int createImageProcessRequest(List<ProductImageSheetDto> productImageData) {
+        Requests requests = createRequest();
+        productImageData.forEach(productImageSheetDto -> {
+            RequestProductMapping requestProductMapping = createRequestProductMapping(productImageSheetDto, requests);
+            createProductImageMapping(productImageSheetDto, requestProductMapping);
+        });
+        return requests.getRequestId();
+    }
+
+    private void createProductImageMapping(ProductImageSheetDto productImageSheetDto, RequestProductMapping requestProductMapping) {
+        List<ProductImageMapping> productImageMappings = new ArrayList<>();
+        for (String imageUrl : productImageSheetDto.getProductImages()){
+            ProductImageMapping productImageMapping = new ProductImageMapping();
+            productImageMapping.setRequestProductMapping(requestProductMapping);
+            productImageMapping.setPrecessed(false);
+            productImageMapping.setImageUrl(imageUrl);
+            productImageMappings.add(productImageMapping);
+        }
+        productImageMappingRepository.saveAll(productImageMappings);
+    }
+
+    private RequestProductMapping createRequestProductMapping(ProductImageSheetDto productImageSheetDto, Requests requests) {
+        RequestProductMapping requestProductMapping = new RequestProductMapping();
+        requestProductMapping.setRequests(requests);
+        requestProductMapping.setProductName(productImageSheetDto.getProductName());
+        requestProductMapping.setSerialNo(productImageSheetDto.getSerialNumber());
+        requestProductMappingRepository.save(requestProductMapping);
+        return requestProductMapping;
+    }
+
+    private Requests createRequest() {
         Requests requests = new Requests();
         requests.setStatus(ImageProcessRequestStatus.CREATED.toString());
         requests.setCreatedDate(LocalDateTime.now());
         requestRepository.save(requests);
-
-        for (ProductImageSheetDto productImageSheetDto : productImageData){
-            RequestProductMapping requestProductMapping = new RequestProductMapping();
-            requestProductMapping.setRequests(requests);
-            requestProductMapping.setProductName(productImageSheetDto.getProductName());
-            requestProductMapping.setSerialNo(productImageSheetDto.getSerialNumber());
-
-            requestProductMappingRepository.save(requestProductMapping);
-
-            List<ProductImageMapping> productImageMappings = new ArrayList<>();
-            for (String imageUrl : productImageSheetDto.getProductImages()){
-                ProductImageMapping productImageMapping = new ProductImageMapping();
-                productImageMapping.setRequestProductMapping(requestProductMapping);
-                productImageMapping.setPrecessed(false);
-                productImageMapping.setImageUrl(imageUrl);
-                productImageMappings.add(productImageMapping);
-            }
-
-            productImageMappingRepository.saveAll(productImageMappings);
-        }
-
-        return requests.getRequestId();
+        return requests;
     }
 }
