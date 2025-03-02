@@ -5,8 +5,7 @@ import com.bulk_image_processing_service.imageUpload.enums.ProductImageSheetForm
 import com.bulk_image_processing_service.imageUpload.exception.InvalidSheetFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,7 +13,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -31,7 +29,9 @@ public class ReadAndValidateProductImageSheet {
         }
 
         List<ProductImageSheetDto> productImageSheetDtoList = new ArrayList<>();
-        try (InputStream inputStream = productImageSheet.getInputStream(); Workbook workbook = WorkbookFactory.create(inputStream)) {
+        try (InputStream inputStream = productImageSheet.getInputStream()
+        ) {
+            Workbook workbook = WorkbookFactory.create(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
 
             if (!isValidHeader(sheet.getRow(0))){
@@ -79,18 +79,18 @@ public class ReadAndValidateProductImageSheet {
 
     private boolean isRowEmpty(Row row) {
         if (row.getCell(ProductImageSheetFormat.SERIAL_NUMBER.ordinal()) == null){
-            return false;
+            return true;
         }
 
         if (row.getCell(ProductImageSheetFormat.PRODUCT_NAME.ordinal()) == null){
-            return false;
+            return true;
         }
 
         if (row.getCell(ProductImageSheetFormat.INPUT_IMAGE_URL.ordinal()) == null){
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private boolean isValidHeader(Row row){

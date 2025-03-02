@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class ImageUploadRepositoryImpl implements ImageUploadRepository{
     public int createImageProcessRequest(List<ProductImageSheetDto> productImageData) {
         Requests requests = new Requests();
         requests.setStatus(ImageProcessRequestStatus.CREATED.toString());
+        requests.setCreatedDate(LocalDateTime.now());
         requestRepository.save(requests);
 
         for (ProductImageSheetDto productImageSheetDto : productImageData){
